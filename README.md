@@ -1,7 +1,17 @@
 # reservas-api
 
-Proyecto de Programación V (backend) - Aderson Renteria.
+API REST con Express 5 y TypeScript para el curso de Programación V (backend).
 
-API de reservas de espacios con Express y TypeScript.
+Endpoints: `/`, `/health`, `/alumnos`, `/courses`, `/instructors`.
 
-> Commit inicial de prueba para verificar el permiso de escritura.
+## Uso
+
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
+
+## Créditos
+
+Este código parte del proyecto del grupo 3 de Programación V (UNIAJC), desarrollado por Erick Santiago Carmona, Daniel Imbachi y Jaider Angulo. Esta copia se publica sin el historial original de commits.
