@@ -1,13 +1,14 @@
 import express from 'express';
-import courseRoutes from './routes/course.routes';
-import instructorRoutes from './routes/instructor.routes';
+import spaceRoutes from './routes/space.routes';
+import requesterRoutes from './routes/requester.routes';
 
 const app = express();
 
+// El parser de JSON siempre va antes de las rutas.
 app.use(express.json());
 
-app.use('/courses', courseRoutes);
-app.use('/instructors', instructorRoutes);
+app.use('/spaces', spaceRoutes);
+app.use('/requesters', requesterRoutes);
 
 const PORT = process.env.PORT || 3000;
 
