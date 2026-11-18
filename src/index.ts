@@ -1,4 +1,6 @@
+import './config/env'; // primera linea: carga .env antes de leer JWT_SECRET
 import express from 'express';
+import authRoutes from './routes/auth.routes';
 import spaceRoutes from './routes/space.routes';
 import requesterRoutes from './routes/requester.routes';
 
@@ -7,6 +9,7 @@ const app = express();
 // El parser de JSON siempre va antes de las rutas.
 app.use(express.json());
 
+app.use('/auth', authRoutes);
 app.use('/spaces', spaceRoutes);
 app.use('/requesters', requesterRoutes);
 
