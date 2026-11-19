@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    container_name: reservas-api
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      # En un entorno real use un secreto largo y propio (variable del shell o archivo .env)
+      JWT_SECRET: ${JWT_SECRET:-cambia-este-secreto-en-docker}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3

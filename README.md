@@ -94,6 +94,20 @@ Cuerpos de ejemplo:
 | `GET /requesters`, `/:id`         | Permitido  | Permitido  | Permitido         | Permitido  |
 | `POST/PUT/DELETE /requesters`     | Denegado   | Denegado   | Denegado          | Permitido  |
 
+## Correrlo con Docker
+
+```bash
+docker compose up --build
+```
+
+La API queda en http://localhost:3000 (prueba: `/health`). Para usar su propio secreto JWT:
+
+```bash
+JWT_SECRET="un-secreto-largo" docker compose up --build
+```
+
+Para detenerlo: `docker compose down`. Los datos viven en memoria, así que se reinician con cada arranque.
+
 ## Pruebas con Postman
 
 Importar `docs/postman/reservas-api.postman_collection.json` y ejecutarla completa, en orden, con el servidor recién reiniciado (los datos en memoria cambian a medida que corren las peticiones). Usa la variable `baseUrl` (`http://localhost:3000`); los logins guardan automáticamente `tokenAdmin`, `tokenLaura`, `tokenWilliams` y `tokenAna`, y cada petición valida el código de estado esperado.
