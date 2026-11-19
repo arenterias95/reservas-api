@@ -108,6 +108,16 @@ JWT_SECRET="un-secreto-largo" docker compose up --build
 
 Para detenerlo: `docker compose down`. Los datos viven en memoria, así que se reinician con cada arranque.
 
+## Pruebas desde la terminal (bash)
+
+Con el servidor corriendo (`npm run dev` o Docker), en otra terminal:
+
+```bash
+bash scripts/probar-api.sh
+```
+
+Prueba autenticación y el Taller 7 con `curl` (401, 403 por rol, 403 no es dueño, 404, 200) e imprime PASA/FALLA por caso. Reinicie el servidor antes de cada corrida: los datos viven en memoria.
+
 ## Pruebas con Postman
 
 Importar `docs/postman/reservas-api.postman_collection.json` y ejecutarla completa, en orden, con el servidor recién reiniciado (los datos en memoria cambian a medida que corren las peticiones). Usa la variable `baseUrl` (`http://localhost:3000`); los logins guardan automáticamente `tokenAdmin`, `tokenLaura`, `tokenWilliams` y `tokenAna`, y cada petición valida el código de estado esperado.
