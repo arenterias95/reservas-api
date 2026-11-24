@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "reservas-api",
-    "description": "Reservas de espacios con autenticacion JWT y autorizacion por rol y por dueño. Ejecutar la coleccion completa en orden (Runner) con el servidor en http://localhost:3000 recien reiniciado.",
+    "description": "Reservas de espacios con autenticacion JWT y autorizacion por rol y por dueño. Ejecutar la coleccion completa en orden (Runner) con el servidor en http://localhost:3000 recien reiniciado. La peticion 7 (500) solo aplica con el servidor arrancado sin JWT_SECRET y con NODE_ENV=production; en una corrida normal queda como omitida (skip).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -1689,6 +1689,535 @@
                 "requesters",
                 "999"
               ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Errores (taller de errores y validaciones)",
+      "item": [
+        {
+          "name": "1. 400 Zod con dos campos malos a la vez (name y capacity)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Formato { error: { code: \"VALIDATION_ERROR\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('VALIDATION_ERROR');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenWilliams}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "spaces"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"A\",\n  \"capacity\": -5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2. 400 JSON mal escrito",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Formato { error: { code: \"INVALID_JSON\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('INVALID_JSON');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"email\": \"admin@reservas.edu\", ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2b. 400 id no numerico (/spaces/abc)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Formato { error: { code: \"VALIDATION_ERROR\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('VALIDATION_ERROR');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/spaces/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "spaces",
+                "abc"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. 401 sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', function () { pm.response.to.have.status(401); });",
+                  "pm.test('Formato { error: { code: \"TOKEN_MISSING\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('TOKEN_MISSING');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3b. 401 credenciales invalidas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', function () { pm.response.to.have.status(401); });",
+                  "pm.test('Formato { error: { code: \"INVALID_CREDENTIALS\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('INVALID_CREDENTIALS');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@reservas.edu\",\n  \"password\": \"incorrecta1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "4. 403 por rol (Laura, COORDINATOR, crea solicitante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', function () { pm.response.to.have.status(403); });",
+                  "pm.test('Formato { error: { code: \"FORBIDDEN_ROLE\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('FORBIDDEN_ROLE');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenLaura}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/requesters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "requesters"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nadie\",\n  \"email\": \"nadie2@reservas.edu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "4b. 403 por no ser el dueño (Laura edita /spaces/1 de Williams)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', function () { pm.response.to.have.status(403); });",
+                  "pm.test('Formato { error: { code: \"NOT_SPACE_OWNER\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('NOT_SPACE_OWNER');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenLaura}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/spaces/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "spaces",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"capacity\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "5. 404 recurso que no existe (/spaces/999)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Formato { error: { code: \"SPACE_NOT_FOUND\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('SPACE_NOT_FOUND');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/spaces/999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "spaces",
+                "999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5b. 404 ruta que no existe (/cursos)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Formato { error: { code: \"ROUTE_NOT_FOUND\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('ROUTE_NOT_FOUND');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cursos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cursos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. 409 correo repetido en el registro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Formato { error: { code: \"EMAIL_TAKEN\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('EMAIL_TAKEN');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Dos\",\n  \"email\": \"admin@reservas.edu\",\n  \"password\": \"Clave123*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "6b. 409 correo de solicitante repetido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Formato { error: { code: \"DUPLICATE\", message } }', function () {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('DUPLICATE');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/requesters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "requesters"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Otra Laura\",\n  \"email\": \"laura@universidad.edu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "7. 500 en produccion sin stack (servidor sin JWT_SECRET y NODE_ENV=production)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Solo tiene sentido con el servidor arrancado SIN JWT_SECRET y con NODE_ENV=production.",
+                  "if (pm.response.code === 500) {",
+                  "  pm.test('Responde 500 INTERNAL_ERROR sin stack', function () {",
+                  "    const e = pm.response.json().error;",
+                  "    pm.expect(e.code).to.eql('INTERNAL_ERROR');",
+                  "    pm.expect(e).to.not.have.property('stack');",
+                  "  });",
+                  "} else {",
+                  "  pm.test.skip('500 en produccion: arranque el servidor sin JWT_SECRET y con NODE_ENV=production', function () {});",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@reservas.edu\",\n  \"password\": \"Clave123*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }

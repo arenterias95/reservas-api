@@ -1,4 +1,5 @@
 import { Space, spaces } from '../data/spaces';
+import { AppError } from '../errors/app-error';
 import { AuthUser } from '../models/user.model';
 
 let nextId = 5; // continua despues de los 4 espacios semilla
@@ -9,8 +10,10 @@ export function listSpaces(): Space[] {
   return spaces;
 }
 
-export function findSpaceById(id: number): Space | undefined {
-  return spaces.find((s) => s.id === id);
+export function findSpaceById(id: number): Space {
+  const space = spaces.find((s) => s.id === id);
+  if (!space) throw new AppError(404, 'Espacio no encontrado', 'SPACE_NOT_FOUND');
+  return space;
 }
 
 // Espacios que pertenecen al usuario que inicio sesion.
@@ -41,10 +44,13 @@ function applyChanges(space: Space, data: Partial<Omit<SpaceInput, 'ownerId'>>):
 // consultar los datos, y eso es trabajo del Service.
 // Primero 404 (si no existe, no tiene sentido preguntar por su dueño) y despues 403.
 function getSpaceForOwner(id: number, user: AuthUser): Space {
-  const space = findSpaceById(id);
-  if (!space) throw new Error('NOT_FOUND');
+  const space = findSpaceById(id); // lanza 404 SPACE_NOT_FOUND si no existe
   if (user.role !== 'ADMIN' && space.ownerId !== user.id) {
-    throw new Error('FORBIDDEN'); // no es ADMIN ni el dueño del espacio
+    throw new AppError(
+      403,
+      'Solo el dueño del espacio o un ADMIN pueden modificarlo',
+      'NOT_SPACE_OWNER'
+    );
   }
   return space;
 }

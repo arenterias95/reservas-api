@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { getJwtSecret } from '../config/env';
+import { AppError } from '../errors/app-error';
 import { AuthUser, Role } from '../models/user.model';
 import { verifyToken } from '../utils/jwt';
 
@@ -9,22 +10,19 @@ export interface AuthRequest extends Request {
 }
 
 // Filtro 1: ¿quien eres? Exige "Authorization: Bearer <token>" valido.
+// No responde por su cuenta: le pasa el error al middleware de errores con next(...).
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token no proporcionado' });
+    return next(new AppError(401, 'Token no proporcionado', 'TOKEN_MISSING'));
   }
 
-  let secret: string;
-  try {
-    secret = getJwtSecret();
-  } catch {
-    return res.status(500).json({ error: 'Falta JWT_SECRET en el archivo .env' });
-  }
+  // Si falta JWT_SECRET, getJwtSecret lanza un Error comun: es un fallo del servidor (500).
+  const secret = getJwtSecret();
 
   const payload = verifyToken(header.slice('Bearer '.length), secret);
   if (!payload) {
-    return res.status(401).json({ error: 'Token invalido o expirado' });
+    return next(new AppError(401, 'Token invalido o expirado', 'TOKEN_INVALID'));
   }
 
   req.user = { id: payload.id, email: payload.email, role: payload.role };
@@ -35,7 +33,7 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
 export function requireRole(...roles: Role[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'No tienes permiso para realizar esta accion' });
+      return next(new AppError(403, 'No tienes permiso para realizar esta accion', 'FORBIDDEN_ROLE'));
     }
     next();
   };
